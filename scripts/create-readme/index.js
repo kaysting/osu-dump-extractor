@@ -44,6 +44,15 @@ async function main() {
                 break;
             }
             case 'typedef': {
+                typesLines.push(`#### ${item.name}`, `\`${item.type.names.join('|')}\``, '', item.description, '');
+                if (item.properties) {
+                    for (const p of item.properties) {
+                        typesLines.push(
+                            `* \`${p.type.names.join('|')}\` \`${p.name}\`: ${p.description.split('\n').join('\n  ')}`
+                        );
+                    }
+                    typesLines.push('');
+                }
                 break;
             }
         }

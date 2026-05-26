@@ -125,6 +125,39 @@ Download, extract, and parse data from `data.ppy.sh` into a preferred format.
 
 ### Types
 
+#### Archive
+`Object`
+
+Represents a `data.ppy.sh` archive entry.
+
+* `string` `name`: The file name of the archive.
+* `string` `url`: The fully qualified URL to this archive file.
+* `string` `date`: The date on which this archive was created, in `YYYY-MM-DD` format.
+* `type` `type`: The type of data contained in this archive. Possibilities are:
+  
+  - `osufiles`: An archive containing every ranked beatmap's `.osu` file, currently numbering over 200k.
+  - `performance`: An archive containing `.sql` dumps of several osu! database tables for beatmaps, users, scores, etc. All archives of this type include data for all ranked beatmaps, but users and scores depend on the mode, performance selection, and count.
+  - `unknown`: Any other archive that doesn't match a known naming scheme.
+* `string` `mode`: The game mode that this dump targets if `type` is `performance`.
+* `Object` `performance`: Performance specifics when `type` is `performance`.
+* `string` `performance.sample`: How players were sampled for performance data in this dump. Either `top` for top players or `random` for random players.
+* `number` `performance.count`: The number of players that were sampled for performance data in this dump. The dump will only include data for this number of players.
+
+#### ModeName
+`'osu'|'taiko'|'catch'|'mania'`
+
+An osu! game mode/ruleset.
+
+#### DatasetName
+`'beatmap-difficulty-attribs'|'beatmap-difficulty'|'beatmap-failtimes'|'beatmap-performance-blacklist'|'beatmaps'|'beatmapsets'|'counts'|'difficulty-attribs'|'highscores'|'playcounts'|'user-stats'|'users'|'scores'|'all'`
+
+The name of an extracted dataset.
+
+#### Format
+`'json'|'ndjson'|'jsonl'|'yaml'|'yml'|'csv'|'tsv'|'txt'`
+
+The name of a supported output format.
+
 
 ## Datasets
 
