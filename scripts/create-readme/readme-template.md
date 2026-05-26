@@ -62,69 +62,9 @@ const OsuDumpExtractorAPI = require('osu-dump-extractor');
 const dumpExtractor = new OsuDumpExtractorAPI();
 ```
 
-### Method: `listArchives`
-List archives currently available on [data.ppy.sh](https://data.ppy.sh).
+{{api_functions}}
 
-### Method: `downloadArchive`
-Download and extract the specified data archive to a local folder.
-
-#### Params
-* **Required:** `string` `downloadDir`: A directory to extract archive data to.
-* **Required:** `string` `archiveName`: The name of a currently available archive on data.ppy.sh. See the output of `listArchives()` if unsure.
-* **Required:** `function` `progressCallback`: A callback to be invoked repeatedly as download/extraction progresses that receives `(loadedBytes, totalBytes)` params.
-
-#### Returns
-`string`
-
-### Method: `datasetsToSqlFiles`
-Get a map of dataset names to mode-specific sql dump file names
-
-#### Params
-* **Required:** `ModeName` `mode`: The mode.
-  
-  Default: `osu`
-
-#### Returns
-`undefined`
-
-### Method: `extract`
-Download, extract, and parse data from `data.ppy.sh` into a preferred format.
-
-#### Params
-* Optional: `Object` `options`: Data extraction options.
-* Optional: `boolean` `options.preserveDownloads`: Whether or not downloaded files should be preserved for future runs after the requested data is extracted.
-* Optional: `string` `options.outputDir`: The path to the directory where output files (JSON, CSV) should be saved, relative to the current working directory.
-  
-  If not specified, an `osu-data` folder will be created in the current working directory and used.
-* Optional: `string` `options.downloadDir`: The path to the directory where data files should be downloaded, relative to the current working directory. A folder for the downloaded archive will be created inside this directory.
-  
-  If not specified, defaults to the value of `outputDir`.
-* Optional: `'osufiles'|'performance'` `options.type`: The type of archive to extract, where `osufiles` is an archive of every ranked beatmap's `.osu` file, and `performance` is an archive of various osu! database table dumps.
-* Optional: `string` `options.date`: The date, in `YYYY-MM` format, of the archive to extract, or `latest` to use the latest available.
-  
-  Default: `'latest'`
-* Optional: `Array.<DatasetName>` `options.datasets`: An list of datasets to extract, or `['all']` to extract all datasets.
-  
-  Default: `['all']`
-* Optional: `Array.<ModeName>` `options.mode`: The game mode to extract datasets for. This only applies if you're extracting user/score data.
-  
-  Default: `'osu'`
-* Optional: `'top'|'random'` `options.sampleMethod`: The method used to sample users for performance data.
-  
-  Default: `'top'`
-* Optional: `'1k'|'10k'` `options.sampleCount`: The number of users to sample for performance data.
-  
-  Default: `'1k'`
-* Optional: `Format` `options.format`: The format to output data in.
-  
-  Default: `'csv'`
-
-#### Returns
-`undefined`
-
-
-### Types
-
+{{api_types}}
 
 ## Datasets
 

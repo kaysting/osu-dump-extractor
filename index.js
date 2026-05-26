@@ -28,19 +28,34 @@ const sqlConverter = require('./utils/sqlConverter');
  * @property {number} performance.count The number of players that were sampled for performance data in this dump. The dump will only include data for this number of players.
  */
 
+/**
+ * An osu! game mode/ruleset.
+ * @typedef {'osu'|'taiko'|'catch'|'mania'} ModeName
+ */
+
+/**
+ * The name of an extracted dataset.
+ * @typedef {'beatmap-difficulty-attribs'|'beatmap-difficulty'|'beatmap-failtimes'|'beatmap-performance-blacklist'|'beatmaps'|'beatmapsets'|'counts'|'difficulty-attribs'|'highscores'|'playcounts'|'user-stats'|'users'|'scores'|'all'} DatasetName
+ */
+
+/**
+ * The name of a supported output format.
+ * @typedef {'json'|'ndjson'|'jsonl'|'yaml'|'yml'|'csv'|'tsv'|'txt'} Format
+ */
+
 class OsuDumpExtractorAPI {
     archiveListCache = [];
     lastArchiveListFetch = 0;
 
     /**
      * Create a new osu-data-extractor API instance.
-     * @param {Object} opts API options.
-     * @param {boolean} opts.enableLogging Whether or not the API should log what's happening. Defaults to `false`.
-     * @param {string} opts.baseUrl The base URL to list and download archives from instead of `https://data.ppy.sh`.
+     * @param {Object} [opts] API options.
+     * @param {boolean} [opts.enableLogging=false] Whether or not the API should log what's happening.
+     * @param {string} [opts.baseUrl='https://data.ppy.sh'] The base URL to list and download archives from.
      */
     constructor({ enableLogging = false, baseUrl = 'https://data.ppy.sh' } = {}) {
-        this.isLoggingEnabled = enableLogging ?? false;
-        this.baseUrl = baseUrl ?? 'https://data.ppy.sh';
+        this.isLoggingEnabled = enableLogging;
+        this.baseUrl = baseUrl;
     }
 
     log(...args) {
@@ -184,7 +199,7 @@ class OsuDumpExtractorAPI {
 
     /**
      * Get a map of dataset names to mode-specific sql dump file names
-     * @param {'osu'|'taiko'|'catch'|'mania'} mode The mode.
+     * @param {ModeName} mode The mode.
      */
     datasetsToSqlFiles(mode = 'osu') {
         const sqlMode = mode == 'osu' ? '' : mode;
@@ -207,35 +222,21 @@ class OsuDumpExtractorAPI {
 
     /**
      * Download, extract, and parse data from `data.ppy.sh` into a preferred format.
-     * @param {Object} options Data extraction options.
-     * @param {boolean} [options.preserveDownloads] Whether or not downloaded files should be preserved for future runs after the requested data is extracted.
-     *
-     * Defaults to `false`.
+     * @param {Object} [options] Data extraction options.
+     * @param {boolean} [options.preserveDownloads=false] Whether or not downloaded files should be preserved for future runs after the requested data is extracted.
      * @param {string} [options.outputDir] The path to the directory where output files (JSON, CSV) should be saved, relative to the current working directory.
      *
      * If not specified, an `osu-data` folder will be created in the current working directory and used.
      * @param {string} [options.downloadDir] The path to the directory where data files should be downloaded, relative to the current working directory. A folder for the downloaded archive will be created inside this directory.
      *
      * If not specified, defaults to the value of `outputDir`.
-     * @param {('osufiles'|'performance')[]} [options.type] The type of archive to extract, where `osufiles` is an archive of every ranked beatmap's `.osu` file, and `performance` is an archive of various osu! database table dumps.
-     * @param {('osufiles'|'performance')[]} [options.date] The date, in `YYYY-MM` format, of the archive to extract, or `latest` to use the latest available.
-     *
-     * Defaults to `latest`.
-     * @param {('beatmap-difficulty-attribs'|'beatmap-difficulty'|'beatmap-failtimes'|'beatmap-performance-blacklist'|'beatmaps'|'beatmapsets'|'counts'|'difficulty-attribs'|'highscores'|'playcounts'|'user-stats'|'users'|'scores'|'all')[]} [options.datasets] An list of datasets to extract, or `['all']` to extract all datasets.
-     *
-     * Defaults to `['all']`.
-     * @param {('osu'|'taiko'|'catch'|'mania')[]} [options.mode] The game mode to extract datasets for. This only applies if you're extracting user/score data.
-     *
-     * Defaults to `osu`
-     * @param {('top'|'random')[]} [options.sampleMethod] The method used to sample users for performance data.
-     *
-     * Defaults to `top`.
-     * @param {('1k'|'10k')[]} [options.sampleCount] The number of users to sample for performance data.
-     *
-     * Defaults to `1k`.
-     * @param {('json'|'ndjson'|'jsonl'|'yaml'|'yml'|'csv'|'tsv'|'txt')[]} [options.format] The format to output data in.
-     *
-     * Defaults to `csv`.
+     * @param {'osufiles'|'performance'} [options.type] The type of archive to extract, where `osufiles` is an archive of every ranked beatmap's `.osu` file, and `performance` is an archive of various osu! database table dumps.
+     * @param {string} [options.date='latest'] The date, in `YYYY-MM` format, of the archive to extract, or `latest` to use the latest available.
+     * @param {DatasetName[]} [options.datasets=['all']] An list of datasets to extract, or `['all']` to extract all datasets.
+     * @param {ModeName[]} [options.mode='osu'] The game mode to extract datasets for. This only applies if you're extracting user/score data.
+     * @param {'top'|'random'} [options.sampleMethod='top'] The method used to sample users for performance data.
+     * @param {'1k'|'10k'} [options.sampleCount='1k'] The number of users to sample for performance data.
+     * @param {Format} [options.format='csv'] The format to output data in.
      */
     async extract({
         preserveDownloads = false,
