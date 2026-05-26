@@ -8,7 +8,7 @@ const formatType = (type, escapePipe = false) => {
 
 const formatFunctionName = item => {
     if (item.scope == 'instance') {
-        return `new ${item.memberof}.${item.name}`;
+        return `new ${item.memberof}().${item.name}`;
     }
     return item.name;
 };
@@ -66,9 +66,9 @@ async function main() {
                 }
 
                 apiLines.push('');
+                break;
             }
             case 'function': {
-                if (item.name == item.memberof) return; // skip constructors
                 apiLines.push(
                     `### Method: \`${formatFunctionName(item)}(): ${item.returns ? item.returns.map(r => formatType(r.type)).join(',') : 'void'}\``,
                     item.description

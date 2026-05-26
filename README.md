@@ -87,20 +87,10 @@ Create a new osu-data-extractor API instance.
 | No | `boolean` | `opts.enableLogging` | Whether or not the API should log what's happening. | `false` |
 | No | `string` | `opts.baseUrl` | The base URL to list and download archives from. | `'https://data.ppy.sh'` |
 
-### Method: `OsuDumpExtractorAPI(): void`
-Create a new osu-data-extractor API instance.
-
-#### Params
-| Required? | Type | Name | Description | Default |
-| --- | --- | --- | --- | --- |
-| No | `Object` | `opts` | API options. | `{}` |
-| No | `boolean` | `opts.enableLogging` | Whether or not the API should log what's happening. | `false` |
-| No | `string` | `opts.baseUrl` | The base URL to list and download archives from. | `'https://data.ppy.sh'` |
-
-### Method: `new OsuDumpExtractorAPI.listArchives(): Archive[]`
+### Method: `new OsuDumpExtractorAPI().listArchives(): Archive[]`
 List archives currently available on [data.ppy.sh](https://data.ppy.sh).
 
-### Method: `new OsuDumpExtractorAPI.downloadArchive(): string`
+### Method: `new OsuDumpExtractorAPI().downloadArchive(): string`
 Download and extract the specified data archive to a local folder.
 
 #### Params
@@ -110,7 +100,7 @@ Download and extract the specified data archive to a local folder.
 | **Yes** | `string` | `archiveName` | The name of a currently available archive on data.ppy.sh. See the output of `listArchives()` if unsure. | `undefined` |
 | **Yes** | `function` | `progressCallback` | A callback to be invoked repeatedly as download/extraction progresses that receives `(loadedBytes, totalBytes)` params. | `undefined` |
 
-### Method: `new OsuDumpExtractorAPI.datasetsToSqlFiles(): void`
+### Method: `new OsuDumpExtractorAPI().datasetsToSqlFiles(): void`
 Get a map of dataset names to mode-specific sql dump file names
 
 #### Params
@@ -118,7 +108,7 @@ Get a map of dataset names to mode-specific sql dump file names
 | --- | --- | --- | --- | --- |
 | **Yes** | `ModeName` | `mode` | The mode. | `osu` |
 
-### Method: `new OsuDumpExtractorAPI.extract(): void`
+### Method: `new OsuDumpExtractorAPI().extract(): void`
 Download, extract, and parse data from `data.ppy.sh` into a preferred format.
 
 #### Params
