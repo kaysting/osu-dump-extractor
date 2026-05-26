@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const { Command, Option, InvalidArgumentError } = require('commander');
 const OsuDumpExtractorAPI = require('.');
 const sqlConverter = require('./utils/sqlConverter');

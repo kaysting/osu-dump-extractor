@@ -67,7 +67,8 @@ async function main() {
     await ode.extract({
         mode: 'mania',
         datasets: ['users', 'beatmaps', 'beatmapsets'],
-        format: 'ndjson'
+        format: 'ndjson',
+        sampleCount: '1k' // this is the default value
     });
 
     console.log('Done!');
