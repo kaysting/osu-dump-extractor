@@ -97,7 +97,7 @@ Create a new osu-data-extractor API instance.
 | No | `boolean` | `opts.enableLogging` | Whether or not the API should log what's happening. | `false` |
 | No | `string` | `opts.baseUrl` | The base URL to list and download archives from. | `'https://data.ppy.sh'` |
 
-### Method: `new OsuDumpExtractorAPI.listArchives(): Array.<Archive>`
+### Method: `new OsuDumpExtractorAPI.listArchives(): Archive[]`
 List archives currently available on [data.ppy.sh](https://data.ppy.sh).
 
 ### Method: `new OsuDumpExtractorAPI.downloadArchive(): string`
@@ -137,17 +137,17 @@ Download, extract, and parse data from `data.ppy.sh` into a preferred format.
 | No | `Format` | `opts.format` | The format to output data in. | `'csv'` |
 
 ### Type: `ModeName`
-`'osu'\|'taiko'\|'catch'\|'mania'`
+`'osu'|'taiko'|'catch'|'mania'`
 
 An osu! game mode/ruleset.
 
 ### Type: `Format`
-`'json'\|'ndjson'\|'jsonl'\|'yaml'\|'yml'\|'csv'\|'tsv'\|'txt'`
+`'json'|'ndjson'|'jsonl'|'yaml'|'yml'|'csv'|'tsv'|'txt'`
 
 The name of a supported output format.
 
 ### Type: `ArchiveType`
-`'osufiles'\|'performance'`
+`'osufiles'|'performance'`
 
 The type of an Archive.
 
@@ -172,7 +172,7 @@ Represents a `data.ppy.sh` archive entry.
 | `number` | `performance.count` | The number of players that were sampled for performance data in this dump. The dump will only include data for this number of players. |
 
 ### Type: `DatasetName`
-`'beatmap-difficulty-attribs'\|'beatmap-difficulty'\|'beatmap-failtimes'\|'beatmap-performance-blacklist'\|'beatmaps'\|'beatmapsets'\|'counts'\|'difficulty-attribs'\|'highscores'\|'playcounts'\|'user-stats'\|'users'\|'scores'\|'all'`
+`'beatmap-difficulty-attribs'|'beatmap-difficulty'|'beatmap-failtimes'|'beatmap-performance-blacklist'|'beatmaps'|'beatmapsets'|'counts'|'difficulty-attribs'|'highscores'|'playcounts'|'user-stats'|'users'|'scores'|'all'`
 
 The name of an extractable dataset contained in archives of type `performance`.
 
