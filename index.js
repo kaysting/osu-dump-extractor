@@ -10,18 +10,22 @@ const SqlToJson = require('./utils/parseSqlFile');
 const sqlConverter = require('./utils/sqlConverter');
 
 /**
- * An osu! game mode/ruleset.
  * @typedef {'osu'|'taiko'|'catch'|'mania'} ModeName
+ * An osu! game mode/ruleset.
  */
 
 /**
- * The name of an extracted dataset.
- * @typedef {'beatmap-difficulty-attribs'|'beatmap-difficulty'|'beatmap-failtimes'|'beatmap-performance-blacklist'|'beatmaps'|'beatmapsets'|'counts'|'difficulty-attribs'|'highscores'|'playcounts'|'user-stats'|'users'|'scores'|'all'} DatasetName
- */
-
-/**
- * The name of a supported output format.
  * @typedef {'json'|'ndjson'|'jsonl'|'yaml'|'yml'|'csv'|'tsv'|'txt'} Format
+ * The name of a supported output format.
+ */
+
+/**
+ * @typedef {'osufiles'|'performance'} ArchiveType
+ * The type of an Archive.
+ *
+ * - `osufiles`: An archive containing every ranked beatmap's `.osu` file, currently numbering over 200k.
+ * - `performance`: An archive containing `.sql` dumps of several osu! database tables for beatmaps, users, scores, etc. All archives of this type include data for all ranked beatmaps, but users and scores depend on the mode, performance selection, and count.
+ * - `unknown`: Any other archive that doesn't match a known naming scheme.
  */
 
 /**
@@ -30,17 +34,32 @@ const sqlConverter = require('./utils/sqlConverter');
  * @property {string} name The file name of the archive.
  * @property {string} url The fully qualified URL to this archive file.
  * @property {string} date The date on which this archive was created, in `YYYY-MM-DD` format.
- * @property {type} type
- * The type of data contained in this archive. Possibilities are:
- *
- * - `osufiles`: An archive containing every ranked beatmap's `.osu` file, currently numbering over 200k.
- * - `performance`: An archive containing `.sql` dumps of several osu! database tables for beatmaps, users, scores, etc. All archives of this type include data for all ranked beatmaps, but users and scores depend on the mode, performance selection, and count.
- * - `unknown`: Any other archive that doesn't match a known naming scheme.
- *
+ * @property {ArchiveType} type The type of data contained in this archive.
  * @property {string} mode The game mode that this dump targets if `type` is `performance`.
  * @property {Object} performance Performance specifics when `type` is `performance`.
  * @property {string} performance.sample How players were sampled for performance data in this dump. Either `top` for top players or `random` for random players.
  * @property {number} performance.count The number of players that were sampled for performance data in this dump. The dump will only include data for this number of players.
+ */
+
+/**
+ * @typedef {'beatmap-difficulty-attribs'|'beatmap-difficulty'|'beatmap-failtimes'|'beatmap-performance-blacklist'|'beatmaps'|'beatmapsets'|'counts'|'difficulty-attribs'|'highscores'|'playcounts'|'user-stats'|'users'|'scores'|'all'} DatasetName
+ * The name of an extractable dataset contained in archives of type `performance`.
+ *
+ * These descriptions are largely based off of what can be gathered from their schemas. There is no official documentation to back them up.
+ *
+ * - `beatmap-difficulty-attribs`: Contains difficulty attributes for each beatmap. See `difficulty-attribs` for the meaning of each attribute.
+ * - `beatmap-difficulty`: Contains star ratings for each beatmap.
+ * - `beatmap-failtimes`: Contains the number of players who failed and quit (exited) at each percentage completion of each beatmap. Each entry has properties for the beatmap ID, type (fail or exit), and p1 through p100, representing the points in the map.
+ * - `beatmap-performance-blacklist`: Contains beatmaps blacklisted from performance. Currently seems to be empty.
+ * - `beatmaps`: Contains data for individual beatmaps, exclusive of the sets they belong to.
+ * - `beatmapsets`: Contains data for beatmapsets, exclusive of the individual beatmaps they contain.
+ * - `counts`: Contains various global osu! infrastructure statistics.
+ * - `difficulty-attribs`: Maps each difficulty attribute ID to a label and visibility status. See `beatmap-difficulty-attribs` for data using these attributes.
+ * - `highscores`: Contains data for each sampled user's top scores.
+ * - `playcounts`: Contains the number of times each sampled user has played each beatmap.
+ * - `user-stats`: Contains total stats for each sampled user.
+ * - `users`: Contains minimal data for each user sampled in the dump.
+ * - `scores`: Contains data for every score each user sampled in the dump has achieved.
  */
 
 class OsuDumpExtractorAPI {
@@ -230,7 +249,7 @@ class OsuDumpExtractorAPI {
      * @param {string} [options.downloadDir] The path to the directory where data files should be downloaded, relative to the current working directory. A folder for the downloaded archive will be created inside this directory.
      *
      * If not specified, defaults to the value of `outputDir`.
-     * @param {'osufiles'|'performance'} [options.type] The type of archive to extract, where `osufiles` is an archive of every ranked beatmap's `.osu` file, and `performance` is an archive of various osu! database table dumps.
+     * @param {ArchiveType} [options.type] The type of archive to extract, where `osufiles` is an archive of every ranked beatmap's `.osu` file, and `performance` is an archive of various osu! database table dumps.
      * @param {string} [options.date='latest'] The date, in `YYYY-MM` format, of the archive to extract, or `latest` to use the latest available.
      * @param {DatasetName[]} [options.datasets=['all']] An list of datasets to extract, or `['all']` to extract all datasets.
      * @param {ModeName[]} [options.mode='osu'] The game mode to extract datasets for. This only applies if you're extracting user/score data.

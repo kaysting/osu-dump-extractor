@@ -68,19 +68,7 @@ Below are all of the dataset options you can choose from when extracting perform
 
 As the structure of these datasets changes over time, they will not be strictly documented here. Extract datasets and review their structures yourself before accessing them programmatically. These descriptions are largely based on assumptions taken from each schema.
 
-- `beatmap-difficulty-attribs`: Contains difficulty attributes for each beatmap. See `difficulty-attribs` for the meaning of each attribute.
-- `beatmap-difficulty`: Contains star ratings for each beatmap.
-- `beatmap-failtimes`: Contains the number of players who failed and quit (exited) at each percentage completion of each beatmap. Each entry has properties for the beatmap ID, type (fail or exit), and p1 through p100, representing the points in the map.
-- `beatmap-performance-blacklist`: Contains beatmaps blacklisted from performance. Currently seems to be empty.
-- `beatmaps`: Contains data for individual beatmaps, exclusive of the sets they belong to.
-- `beatmapsets`: Contains data for beatmapsets, exclusive of the individual beatmaps they contain.
-- `counts`: Contains various global osu! infrastructure statistics.
-- `difficulty-attribs`: Maps each difficulty attribute ID to a label and visibility status. See `beatmap-difficulty-attribs` for data using these attributes.
-- `highscores`: Contains data for each sampled user's top scores.
-- `playcounts`: Contains the number of times each sampled user has played each beatmap.
-- `user-stats`: Contains total stats for each sampled user.
-- `users`: Contains minimal data for each user sampled in the dump.
-- `scores`: Contains data for every score each user sampled in the dump has achieved.
+
 
 ## AI Disclosure
 

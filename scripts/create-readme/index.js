@@ -2,8 +2,8 @@ const path = require('path');
 const jsdoc = require('jsdoc-api');
 const fs = require('fs');
 
-const formatType = type => {
-    return type.names.map(name => name.replace(/Array\.<(.+)>/g, '$1[]')).join('\\|');
+const formatType = (type, escapePipe = false) => {
+    return type.names.map(name => (escapePipe ? name.replace(/Array\.<(.+)>/g, '$1[]') : name)).join('\\|');
 };
 
 async function main() {
@@ -43,7 +43,7 @@ async function main() {
                             '| ' +
                                 [
                                     p.optional ? 'No' : '**Yes**',
-                                    `\`${formatType(p.type)}\``,
+                                    `\`${formatType(p.type, true)}\``,
                                     `\`${p.name}\``,
                                     p.description.split('\n').join('<br>') || '',
                                     `\`${p.defaultvalue}\`` ?? ''
@@ -65,7 +65,7 @@ async function main() {
                         apiLines.push(
                             '| ' +
                                 [
-                                    `\`${formatType(p.type)}\``,
+                                    `\`${formatType(p.type, true)}\``,
                                     `\`${p.name}\``,
                                     p.description.split('\n').join('<>br') || ''
                                 ].join(' | ') +
