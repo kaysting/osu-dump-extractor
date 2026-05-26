@@ -72,7 +72,7 @@ class OsuDumpExtractorAPI {
 
     /**
      * List archives currently available on [data.ppy.sh](https://data.ppy.sh).
-     * @returns {Archive[]}
+     * @returns {Archive[]} An array of Archive objects.
      */
     async listArchives() {
         /*
