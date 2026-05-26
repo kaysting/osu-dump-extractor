@@ -34,7 +34,7 @@ Options:
                                   "counts", "difficulty-attribs", "highscores", "playcounts", "user-stats", "users",
                                   "scores", default: ["all"])
   -f, --format <FORMAT>           Specify the format extracted data should be saved in. (choices: "json", "ndjson",
-                                  "jsonl", "csv", "yaml", "yml", "txt", "tsv", default: "json")
+                                  "jsonl", "csv", "yaml", "yml", "txt", "tsv", default: "csv")
   --sm, --sample-method <METHOD>  Specify the method used to sample users for performance data. (choices: "top",
                                   "random", default: "top")
   --sc, --sample-count <COUNT>    Specify the number of users to sample for performance data. (choices: "1k", "10k",

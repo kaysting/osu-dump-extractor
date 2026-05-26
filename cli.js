@@ -33,7 +33,7 @@ program
     .addOption(
         new Option(`-f, --format <FORMAT>`, `Specify the format extracted data should be saved in.`)
             .choices(Object.keys(formats))
-            .default('json')
+            .default('csv')
     )
     .addOption(
         new Option(`--sm, --sample-method <METHOD>`, `Specify the method used to sample users for performance data.`)
