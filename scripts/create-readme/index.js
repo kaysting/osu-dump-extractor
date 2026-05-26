@@ -3,7 +3,7 @@ const jsdoc = require('jsdoc-api');
 const fs = require('fs');
 
 const formatType = type => {
-    return type.names.join('\\|');
+    return type.names.map(name => name.replace(/Array\.<(.+)>/g, '$1[]')).join('\\|');
 };
 
 async function main() {

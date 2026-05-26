@@ -58,7 +58,7 @@ const OsuDumpExtractorAPI = require('osu-dump-extractor');
 const dumpExtractor = new OsuDumpExtractorAPI();
 ```
 
-### Method: `listArchives(): Array.<Archive>`
+### Method: `listArchives(): Archive[]`
 List archives currently available on [data.ppy.sh](https://data.ppy.sh).
 
 ### Method: `downloadArchive(): string`
@@ -91,8 +91,8 @@ Download, extract, and parse data from `data.ppy.sh` into a preferred format.
 | No | `string` | `options.downloadDir` | The path to the directory where data files should be downloaded, relative to the current working directory. A folder for the downloaded archive will be created inside this directory.<br><br>If not specified, defaults to the value of `outputDir`. | `undefined` |
 | No | `'osufiles'\|'performance'` | `options.type` | The type of archive to extract, where `osufiles` is an archive of every ranked beatmap's `.osu` file, and `performance` is an archive of various osu! database table dumps. | `undefined` |
 | No | `string` | `options.date` | The date, in `YYYY-MM` format, of the archive to extract, or `latest` to use the latest available. | `'latest'` |
-| No | `Array.<DatasetName>` | `options.datasets` | An list of datasets to extract, or `['all']` to extract all datasets. | `['all']` |
-| No | `Array.<ModeName>` | `options.mode` | The game mode to extract datasets for. This only applies if you're extracting user/score data. | `'osu'` |
+| No | `DatasetName[]` | `options.datasets` | An list of datasets to extract, or `['all']` to extract all datasets. | `['all']` |
+| No | `ModeName[]` | `options.mode` | The game mode to extract datasets for. This only applies if you're extracting user/score data. | `'osu'` |
 | No | `'top'\|'random'` | `options.sampleMethod` | The method used to sample users for performance data. | `'top'` |
 | No | `'1k'\|'10k'` | `options.sampleCount` | The number of users to sample for performance data. | `'1k'` |
 | No | `Format` | `options.format` | The format to output data in. | `'csv'` |
