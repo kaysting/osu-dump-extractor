@@ -11,13 +11,12 @@ async function main() {
 
     const dataPublic = data.filter(d => !d.undocumented);
 
-    const functionsLines = [];
-    const typesLines = ['### Types', ''];
+    const apiLines = [];
 
     for (const item of dataPublic) {
         switch (item.kind) {
             case 'function': {
-                functionsLines.push(
+                apiLines.push(
                     `### Method: \`${item.name}(): ${item.returns ? item.returns.map(r => formatType(r.type)).join(',') : 'void'}\``,
                     item.description
                 );
@@ -30,12 +29,12 @@ async function main() {
                         return nA - nB;
                     });
 
-                    functionsLines.push('', '#### Params');
-                    functionsLines.push('| Required? | Type | Name | Description | Default |');
-                    functionsLines.push('| --- | --- | --- | --- | --- |');
+                    apiLines.push('', '#### Params');
+                    apiLines.push('| Required? | Type | Name | Description | Default |');
+                    apiLines.push('| --- | --- | --- | --- | --- |');
 
                     for (const p of paramsSorted) {
-                        functionsLines.push(
+                        apiLines.push(
                             '| ' +
                                 [
                                     p.optional ? 'No' : '**Yes**',
@@ -49,16 +48,16 @@ async function main() {
                     }
                 }
 
-                functionsLines.push('');
+                apiLines.push('');
                 break;
             }
             case 'typedef': {
-                typesLines.push(`#### \`${item.name}\``, `\`${formatType(item.type)}\``, '', item.description, '');
+                apiLines.push(`### Type: \`${item.name}\``, `\`${formatType(item.type)}\``, '', item.description, '');
                 if (item.properties) {
-                    typesLines.push('| Type | Name | Description |');
-                    typesLines.push('| --- | --- | --- |');
+                    apiLines.push('| Type | Name | Description |');
+                    apiLines.push('| --- | --- | --- |');
                     for (const p of item.properties) {
-                        typesLines.push(
+                        apiLines.push(
                             '| ' +
                                 [
                                     `\`${formatType(p.type)}\``,
@@ -68,7 +67,7 @@ async function main() {
                                 ' |'
                         );
                     }
-                    typesLines.push('');
+                    apiLines.push('');
                 }
                 break;
             }
@@ -77,8 +76,8 @@ async function main() {
 
     const readmeHydrated = fs
         .readFileSync(path.join(__dirname, 'readme-template.md'), 'utf-8')
-        .replace('{{api_functions}}', functionsLines.join('\n'))
-        .replace('{{api_types}}', typesLines.join('\n'));
+        .replace('{{api_functions}}', apiLines.join('\n'))
+        .replace('{{api_types}}', apiLines.join('\n'));
     fs.writeFileSync('./README.md', readmeHydrated);
 }
 main();
