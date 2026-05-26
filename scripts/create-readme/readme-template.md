@@ -48,23 +48,36 @@ Options:
   -h, --help                      display help for command
 ```
 
-## Node API
+## Node API Usage
 
-This package provides a class with all functionality attached. Create a new instance like so:
+Quick usage example:
 
 ```js
 const OsuDumpExtractorAPI = require('osu-dump-extractor');
 
-const dumpExtractor = new OsuDumpExtractorAPI();
+async function main() {
+    // Create a new instance
+    const ode = new OsuDumpExtractorAPI({
+        enableLogging: true // Enable logging progress if you want (disabled by default)
+    });
+
+    // You'll generally just use the extract() method, which functions the same as the CLI
+    // Here we'll extract beatmap data and a list of the top 1k mania players in NDJSON format
+    // This configuration will create a default output directory and pull the latest data
+    await ode.extract({
+        mode: 'mania',
+        datasets: ['users', 'beatmaps', 'beatmapsets'],
+        format: 'ndjson'
+    });
+
+    console.log('Done!');
+}
+main();
 ```
 
+## Node API Docs
+
 {{api_docs}}
-
-## Datasets
-
-Below are all of the dataset options you can choose from when extracting performance archives.
-
-As the structure of these datasets changes over time, they will not be strictly documented here. Extract datasets and review their structures yourself before accessing them programmatically. These descriptions are largely based on assumptions taken from each schema.
 
 ## AI Disclosure
 

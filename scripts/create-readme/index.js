@@ -6,13 +6,50 @@ const formatType = (type, escapePipe = false) => {
     return type.names.map(name => (escapePipe ? name.replace(/Array\.<(.+)>/g, '$1[]') : name)).join('\\|');
 };
 
+const formatFunctionName = item => {
+    if (item.scope == 'instance') {
+        return `new ${item.memberof}.${item.name}`;
+    }
+    return item.name;
+};
+
+const itemParamsToTable = item => {
+    let lines = [];
+    if (item.params?.length) {
+        // Sort params with required first
+        const paramsSorted = item.params.toSorted((a, b) => {
+            const nA = a.optional ? 1 : 0;
+            const nB = b.optional ? 1 : 0;
+            return nA - nB;
+        });
+
+        lines.push('| Required? | Type | Name | Description | Default |');
+        lines.push('| --- | --- | --- | --- | --- |');
+
+        for (const p of paramsSorted) {
+            lines.push(
+                '| ' +
+                    [
+                        p.optional ? 'No' : '**Yes**',
+                        `\`${formatType(p.type, true)}\``,
+                        `\`${p.name}\``,
+                        p.description.split('\n').join('<br>') || '',
+                        `\`${p.defaultvalue}\`` ?? ''
+                    ].join(' | ') +
+                    ' |'
+            );
+        }
+    }
+    return lines.join('\n');
+};
+
 async function main() {
     const data = await jsdoc.explain({ files: 'index.js' });
 
     const dataPublic = data
         .filter(d => !d.undocumented)
         .sort((a, b) => {
-            const kinds = ['function', 'typedef'];
+            const kinds = ['class', 'function', 'typedef'];
             return kinds.indexOf(a.kind) - kinds.indexOf(b.kind);
         });
 
@@ -20,37 +57,25 @@ async function main() {
 
     for (const item of dataPublic) {
         switch (item.kind) {
+            case 'class': {
+                apiLines.push(`### Class Constructor: \`new ${item.name}(): this\``, item.description);
+
+                if (item.params?.length) {
+                    apiLines.push('', '#### Params');
+                    apiLines.push(itemParamsToTable(item));
+                }
+
+                apiLines.push('');
+            }
             case 'function': {
                 apiLines.push(
-                    `### Method: \`${item.name}(): ${item.returns ? item.returns.map(r => formatType(r.type)).join(',') : 'void'}\``,
+                    `### Method: \`${formatFunctionName(item)}(): ${item.returns ? item.returns.map(r => formatType(r.type)).join(',') : 'void'}\``,
                     item.description
                 );
 
-                if (item.params.length) {
-                    // Sort params with required first
-                    const paramsSorted = item.params.toSorted((a, b) => {
-                        const nA = a.optional ? 1 : 0;
-                        const nB = b.optional ? 1 : 0;
-                        return nA - nB;
-                    });
-
+                if (item.params?.length) {
                     apiLines.push('', '#### Params');
-                    apiLines.push('| Required? | Type | Name | Description | Default |');
-                    apiLines.push('| --- | --- | --- | --- | --- |');
-
-                    for (const p of paramsSorted) {
-                        apiLines.push(
-                            '| ' +
-                                [
-                                    p.optional ? 'No' : '**Yes**',
-                                    `\`${formatType(p.type, true)}\``,
-                                    `\`${p.name}\``,
-                                    p.description.split('\n').join('<br>') || '',
-                                    `\`${p.defaultvalue}\`` ?? ''
-                                ].join(' | ') +
-                                ' |'
-                        );
-                    }
+                    apiLines.push(itemParamsToTable(item));
                 }
 
                 apiLines.push('');
@@ -79,9 +104,9 @@ async function main() {
         }
     }
 
-    const readmeHydrated = fs
+    const readme = fs
         .readFileSync(path.join(__dirname, 'readme-template.md'), 'utf-8')
         .replace('{{api_docs}}', apiLines.join('\n'));
-    fs.writeFileSync('./README.md', readmeHydrated);
+    fs.writeFileSync('./README.md', readme);
 }
 main();
