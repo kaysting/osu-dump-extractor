@@ -81,8 +81,7 @@ async function main() {
 
     const readmeHydrated = fs
         .readFileSync(path.join(__dirname, 'readme-template.md'), 'utf-8')
-        .replace('{{api_functions}}', apiLines.join('\n'))
-        .replace('{{api_types}}', apiLines.join('\n'));
+        .replace('{{api_docs}}', apiLines.join('\n'));
     fs.writeFileSync('./README.md', readmeHydrated);
 }
 main();

@@ -58,17 +58,13 @@ const OsuDumpExtractorAPI = require('osu-dump-extractor');
 const dumpExtractor = new OsuDumpExtractorAPI();
 ```
 
-{{api_functions}}
-
-{{api_types}}
+{{api_docs}}
 
 ## Datasets
 
 Below are all of the dataset options you can choose from when extracting performance archives.
 
 As the structure of these datasets changes over time, they will not be strictly documented here. Extract datasets and review their structures yourself before accessing them programmatically. These descriptions are largely based on assumptions taken from each schema.
-
-
 
 ## AI Disclosure
 
