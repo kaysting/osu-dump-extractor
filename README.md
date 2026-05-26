@@ -9,10 +9,6 @@ data.ppy.sh provides archives of the following data each month:
 - Up to 10,000 top or random players in any mode (names and IDs)
 - All scores set by up to the top or random 10,000 players in any mode
 
-- [CLI](#cli)
-- [Node API](#node-api)
-- [Datasets](#datasets)
-
 ## CLI
 
 With Node.js installed on your system, you can use the API via `npx`:
