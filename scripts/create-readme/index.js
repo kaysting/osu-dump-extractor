@@ -9,7 +9,12 @@ const formatType = type => {
 async function main() {
     const data = await jsdoc.explain({ files: 'index.js' });
 
-    const dataPublic = data.filter(d => !d.undocumented);
+    const dataPublic = data
+        .filter(d => !d.undocumented)
+        .sort((a, b) => {
+            const kinds = ['function', 'typedef'];
+            return kinds.indexOf(a.kind) - kinds.indexOf(b.kind);
+        });
 
     const apiLines = [];
 

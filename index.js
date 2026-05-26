@@ -10,6 +10,21 @@ const SqlToJson = require('./utils/parseSqlFile');
 const sqlConverter = require('./utils/sqlConverter');
 
 /**
+ * An osu! game mode/ruleset.
+ * @typedef {'osu'|'taiko'|'catch'|'mania'} ModeName
+ */
+
+/**
+ * The name of an extracted dataset.
+ * @typedef {'beatmap-difficulty-attribs'|'beatmap-difficulty'|'beatmap-failtimes'|'beatmap-performance-blacklist'|'beatmaps'|'beatmapsets'|'counts'|'difficulty-attribs'|'highscores'|'playcounts'|'user-stats'|'users'|'scores'|'all'} DatasetName
+ */
+
+/**
+ * The name of a supported output format.
+ * @typedef {'json'|'ndjson'|'jsonl'|'yaml'|'yml'|'csv'|'tsv'|'txt'} Format
+ */
+
+/**
  * Represents a `data.ppy.sh` archive entry.
  * @typedef {Object} Archive
  * @property {string} name The file name of the archive.
@@ -26,21 +41,6 @@ const sqlConverter = require('./utils/sqlConverter');
  * @property {Object} performance Performance specifics when `type` is `performance`.
  * @property {string} performance.sample How players were sampled for performance data in this dump. Either `top` for top players or `random` for random players.
  * @property {number} performance.count The number of players that were sampled for performance data in this dump. The dump will only include data for this number of players.
- */
-
-/**
- * An osu! game mode/ruleset.
- * @typedef {'osu'|'taiko'|'catch'|'mania'} ModeName
- */
-
-/**
- * The name of an extracted dataset.
- * @typedef {'beatmap-difficulty-attribs'|'beatmap-difficulty'|'beatmap-failtimes'|'beatmap-performance-blacklist'|'beatmaps'|'beatmapsets'|'counts'|'difficulty-attribs'|'highscores'|'playcounts'|'user-stats'|'users'|'scores'|'all'} DatasetName
- */
-
-/**
- * The name of a supported output format.
- * @typedef {'json'|'ndjson'|'jsonl'|'yaml'|'yml'|'csv'|'tsv'|'txt'} Format
  */
 
 class OsuDumpExtractorAPI {
