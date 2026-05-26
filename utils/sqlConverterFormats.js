@@ -53,6 +53,9 @@ module.exports = {
         };
     },
 
+    // NDJSON alias
+    jsonl: outputStream => formatHandlers.json(outputStream),
+
     // CSV
     csv: outputStream => {
         const escapeCsv = val => {

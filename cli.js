@@ -3,6 +3,8 @@ const OsuDumpExtractorAPI = require('.');
 const sqlConverter = require('./utils/sqlConverter');
 const formats = require('./utils/sqlConverterFormats');
 
+const api = new OsuDumpExtractorAPI({ enableLogging: true });
+
 const program = new Command();
 program
     .name('osu-dump-extractor')
@@ -25,22 +27,7 @@ program
             '-s, --datasets <DATASETS...>',
             `Specify a list of datasets to extract from a data archive of type performance. Specify "all" if you want all datasets extracted. This has no effect when the type is osufiles.`
         )
-            .choices([
-                'beatmap-difficulty-attribs',
-                'beatmap-difficulty',
-                'beatmap-failtimes',
-                'beatmap-performance-blacklist',
-                'beatmaps',
-                'beatmapsets',
-                'counts',
-                'difficulty-attribs',
-                'highscores',
-                'beatmap-playcounts',
-                'user-stats',
-                'users',
-                'scores',
-                'all'
-            ])
+            .choices(['all', ...Object.keys(api.datasetsToSqlFiles())])
             .default(['all'])
     )
     .addOption(
@@ -70,10 +57,10 @@ program
         },
         'latest'
     )
-    .option(`-o, --output-dir <DIRECTORY>`, `Specify the directory to save extracted data to.`, './osu-dump-extractor')
-    .option(`--download-dir <DIRECTORY>`, `Specify the directory to save downloaded archive data to.`)
+    .option(`-o, --odir <DIRECTORY>`, `Specify the directory to save extracted data to.`, './osu-dump-extractor')
+    .option(`--ddir <DIRECTORY>`, `Specify the directory to save downloaded archive data to.`)
     .option(
-        `--preserve`,
+        `-p, --preserve`,
         `If set, downloaded files will be preserved so future runs targeting the same archive can skip downloading.`,
         false
     )
@@ -81,15 +68,15 @@ program
 
 const options = program.opts();
 
-const api = new OsuDumpExtractorAPI({ enableLogging: true });
 api.extract({
     preserveDownloads: options.preserve,
     datasets: options.datasets,
-    outputDir: options.outputDir,
-    downloadDir: options.downloadDir,
+    outputDir: options.odir,
+    downloadDir: options.ddir,
     mode: options.mode,
     sampleCount: options.sampleCount,
     sampleMethod: options.sampleMethod,
     type: options.type,
-    date: options.date
+    date: options.date,
+    format: options.format
 });

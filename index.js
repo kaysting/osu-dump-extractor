@@ -1,4 +1,5 @@
 const fs = require('fs');
+const fsp = require('fs/promises');
 const path = require('path');
 const readline = require('readline');
 const tar = require('tar');
@@ -6,6 +7,7 @@ const bz2 = require('unbzip2-stream');
 const axios = require('axios');
 const { JSDOM } = require('jsdom');
 const SqlToJson = require('./utils/parseSqlFile');
+const sqlConverter = require('./utils/sqlConverter');
 
 /**
  * Represents a `data.ppy.sh` archive entry.
@@ -36,9 +38,9 @@ class OsuDumpExtractorAPI {
      * @param {boolean} opts.enableLogging Whether or not the API should log what's happening. Defaults to `false`.
      * @param {string} opts.baseUrl The base URL to list and download archives from instead of `https://data.ppy.sh`.
      */
-    constructor(opts = {}) {
-        this.isLoggingEnabled = opts.enableLogging ?? false;
-        this.baseUrl = opts.baseUrl ?? 'https://data.ppy.sh';
+    constructor({ enableLogging = false, baseUrl = 'https://data.ppy.sh' } = {}) {
+        this.isLoggingEnabled = enableLogging ?? false;
+        this.baseUrl = baseUrl ?? 'https://data.ppy.sh';
     }
 
     log(...args) {
@@ -49,7 +51,8 @@ class OsuDumpExtractorAPI {
     logOverwrite(message) {
         readline.cursorTo(process.stdout, 0);
         readline.clearLine(process.stdout, 1);
-        process.stdout.write(message);
+        process.stdout.write(`[osu-dump-extractor] ${message}`);
+        readline.cursorTo(process.stdout, 0);
     }
 
     /**
@@ -152,23 +155,12 @@ class OsuDumpExtractorAPI {
             }
 
             // Start download and get stream
-            this.log(`Archive ${archiveName} will be downloaded to to ${downloadDir}`);
-            let lastDownloadLog = Date.now() - 2000;
             const stream = await axios({
                 method: 'GET',
                 url: archiveEntry.url,
                 responseType: 'stream',
                 onDownloadProgress: e => {
                     if (progressCallback) progressCallback(e.loaded, e.total);
-                    const percent = ((e.loaded / e.total) * 100).toFixed(2);
-                    if (Date.now() - lastDownloadLog > 5000) {
-                        const loadedM = Math.floor(e.loaded / (1024 * 1024));
-                        const totalM = Math.floor(e.total / (1024 * 1024));
-                        this.logOverwrite(
-                            `Downloading and extracting archive: ${percent}% (${loadedM}MB / ${totalM}MB)...`
-                        );
-                        lastDownloadLog = Date.now();
-                    }
                 }
             });
 
@@ -182,7 +174,6 @@ class OsuDumpExtractorAPI {
 
             // Handle extraction events
             extraction.on('finish', () => {
-                this.log(`Archive ${archiveName} extracted to ${downloadDir}`);
                 resolve(downloadDir);
             });
             extraction.on('error', err => {
@@ -191,7 +182,11 @@ class OsuDumpExtractorAPI {
         });
     }
 
-    datatypesToSqlFiles(mode = 'osu') {
+    /**
+     * Get a map of dataset names to mode-specific sql dump file names
+     * @param {'osu'|'taiko'|'catch'|'mania'} mode The mode.
+     */
+    datasetsToSqlFiles(mode = 'osu') {
         const sqlMode = mode == 'osu' ? '' : mode;
         return {
             'beatmap-difficulty-attribs': 'osu_beatmap_difficulty_attribs.sql',
@@ -203,7 +198,7 @@ class OsuDumpExtractorAPI {
             counts: 'osu_counts.sql',
             'difficulty-attribs': 'osu_difficulty_attribs.sql',
             highscores: `osu_scores${sqlMode ? `_${sqlMode}` : ''}_high.sql`,
-            playcounts: 'osu_user_beatmap_playcounts.sql',
+            playcounts: 'osu_user_beatmap_playcount.sql',
             'user-stats': `osu_user_stats${sqlMode ? `_${sqlMode}` : ''}.sql`,
             users: 'sample_users.sql',
             scores: 'scores.sql'
@@ -218,15 +213,15 @@ class OsuDumpExtractorAPI {
      * Defaults to `false`.
      * @param {string} [options.outputDir] The path to the directory where output files (JSON, CSV) should be saved, relative to the current working directory.
      *
-     * If not specified, a `osu-data-extractor` folder will be created in the current working directory and used.
-     * @param {string} [options.downloadDir] The path to the directory where data files should be downloaded, relative to the current working directory.
+     * If not specified, an `osu-data` folder will be created in the current working directory and used.
+     * @param {string} [options.downloadDir] The path to the directory where data files should be downloaded, relative to the current working directory. A folder for the downloaded archive will be created inside this directory.
      *
-     * If not specified, a `downloads` folder inside `outputDir` will be created and used.
+     * If not specified, defaults to the value of `outputDir`.
      * @param {('osufiles'|'performance')[]} [options.type] The type of archive to extract, where `osufiles` is an archive of every ranked beatmap's `.osu` file, and `performance` is an archive of various osu! database table dumps.
      * @param {('osufiles'|'performance')[]} [options.date] The date, in `YYYY-MM` format, of the archive to extract, or `latest` to use the latest available.
      *
      * Defaults to `latest`.
-     * @param {('beatmap-difficulty-attribs'|'beatmap-difficulty'|'beatmap-failtimes'|'beatmap-performance-blacklist'|'beatmaps'|'beatmapsets'|'counts'|'difficulty-attribs'|'highscores'|'beatmap-playcounts'|'user-stats'|'users'|'scores'|'all')[]} [options.datasets] An list of datasets to extract, or `['all']` to extract all datasets.
+     * @param {('beatmap-difficulty-attribs'|'beatmap-difficulty'|'beatmap-failtimes'|'beatmap-performance-blacklist'|'beatmaps'|'beatmapsets'|'counts'|'difficulty-attribs'|'highscores'|'playcounts'|'user-stats'|'users'|'scores'|'all')[]} [options.datasets] An list of datasets to extract, or `['all']` to extract all datasets.
      *
      * Defaults to `['all']`.
      * @param {('osu'|'taiko'|'catch'|'mania')[]} [options.mode] The game mode to extract datasets for. This only applies if you're extracting user/score data.
@@ -238,56 +233,169 @@ class OsuDumpExtractorAPI {
      * @param {('1k'|'10k')[]} [options.sampleCount] The number of users to sample for performance data.
      *
      * Defaults to `1k`.
+     * @param {('json'|'ndjson'|'jsonl'|'yaml'|'yml'|'csv'|'tsv'|'txt')[]} [options.format] The format to output data in.
+     *
+     * Defaults to `csv`.
      */
-    async extract(options = {}) {
-        // Explicitly set options with defaults instead of using spread
-        // This lets people pass options set to null or undefined and they'll safely default
-        const opts = {
-            preserveDownloads: options.preserveDownloads ?? false,
-            outputDir: options.outputDir ?? './osu-dump-extractor',
-            downloadDir: options.downloadDir ?? null,
-            type: options.type ?? 'performance',
-            datasets: options.datasets ?? [],
-            mode: options.mode ?? 'osu',
-            date: options.date ?? 'latest',
-            sampleMethod: options.sampleMethod ?? 'top',
-            sampleCount: options.sampleCount ?? '1k'
-        };
-
-        // Get absolute paths
-        const outputDirAbs = path.resolve(opts.outputDir);
-        const downloadDirAbs = !opts.downloadDir
-            ? path.join(outputDirAbs, 'downloads')
-            : path.resolve(opts.downloadDir);
-
-        const countToNumber = {
+    async extract({
+        preserveDownloads = false,
+        outputDir = './osu-data',
+        downloadDir = null,
+        type = 'performance',
+        datasets = [],
+        mode = 'osu',
+        date = 'latest',
+        sampleMethod = 'top',
+        sampleCount = '1k',
+        format = 'csv'
+    } = {}) {
+        // Map string sampleCount to number
+        const sampleCountNum = {
             '1k': 1000,
             '10k': 10000
-        };
+        }[sampleCount];
 
         // Get the target archive
         const archives = await this.listArchives();
         const archive = archives
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .find(a => {
-                if (opts.type == 'osufiles') {
-                    return a.type == 'osufiles' && (opts.date == 'latest' || a.date.startsWith(opts.date));
+                if (type == 'osufiles') {
+                    return a.type == 'osufiles' && (date == 'latest' || a.date.startsWith(date));
                 }
                 return (
                     a.type == 'performance' &&
-                    (opts.date == 'latest' || a.date.startsWith(opts.date)) &&
-                    a.mode == opts.mode &&
-                    a.performance.sample == opts.sampleMethod &&
-                    a.performance.count == countToNumber[opts.sampleCount]
+                    (date == 'latest' || a.date.startsWith(date)) &&
+                    a.mode == mode &&
+                    a.performance.sample == sampleMethod &&
+                    a.performance.count == sampleCountNum
                 );
             });
 
-        if (!archive) {
-            this.log(`Error: No archive found matching specifications. Check specified date and other settings.`);
-            return;
+        // Make sure we got an archive
+        if (!archive)
+            return this.log(
+                `Error: No archive found matching specifications. Check specified date and other settings.`
+            );
+        this.log(`Located archive matching specifications at ${archive.url}`);
+
+        // Get absolute paths
+        const outputDirAbs = path.resolve(outputDir);
+        const downloadDirAbs = path.join(!downloadDir ? outputDirAbs : path.resolve(downloadDir), archive.name);
+        const downloadDirTmpAbs = `${downloadDirAbs}-incomplete`;
+
+        // Only download if not already downloaded
+        if (!fs.existsSync(downloadDirAbs)) {
+            // Wipe temp download directory
+            if (fs.existsSync(downloadDirTmpAbs)) {
+                this.log(`Deleting incomplete download at ${downloadDirTmpAbs}...`);
+                fs.rmSync(downloadDirTmpAbs, { recursive: true, force: true });
+            }
+            fs.mkdirSync(downloadDirTmpAbs, { recursive: true });
+
+            // Download and extract the archive
+            this.log(`Downloading ${archive.name} to ${downloadDirAbs}...`);
+            let lastLogTime = Date.now();
+            await this.downloadArchive(downloadDirTmpAbs, archive.name, (loaded, total) => {
+                if (Date.now() - lastLogTime < 500) return;
+                const percent = ((loaded / total) * 100).toFixed(2);
+                const loadedM = Math.floor(loaded / (1024 * 1024));
+                const totalM = Math.floor(total / (1024 * 1024));
+                this.logOverwrite(`Downloading and extracting archive: ${percent}% (${loadedM}MB / ${totalM}MB)...`);
+            });
+            this.log(`${archive.name} extracted to ${downloadDirAbs}`);
+
+            // Move temp download dir to final
+            fs.renameSync(downloadDirTmpAbs, downloadDirAbs);
+        } else {
+            this.log(`Using complete download in ${downloadDirAbs}`);
         }
 
-        this.log(`Located archive matching specifications at ${archive.url}`);
+        // Create output directory
+        if (!fs.existsSync(outputDirAbs)) {
+            fs.mkdirSync(outputDirAbs, { recursive: true });
+        }
+
+        if (type == 'performance') {
+            const dsToSql = this.datasetsToSqlFiles(mode);
+
+            // Get resolved list of selected datasets
+            const activeDatasets = [];
+            if (datasets.includes('all')) {
+                activeDatasets.push(...Object.keys(dsToSql));
+            } else {
+                activeDatasets.push(...datasets);
+            }
+
+            // Loop through datasets
+            for (const set of activeDatasets) {
+                // Make sure set is valid and sql file exists
+                const sqlFile = dsToSql[set];
+                if (!sqlFile) {
+                    this.log(`Dataset ${set} has no corresponding .sql file, skipping`);
+                    continue;
+                }
+                const sqlPath = path.join(downloadDirAbs, sqlFile);
+                if (!fs.existsSync(sqlPath)) {
+                    this.log(
+                        `Error: Couldn't find ${sqlFile} corresponding to dataset ${set} in extracted archive, skipping`
+                    );
+                    continue;
+                }
+
+                // Delete existing output file
+                const outputPath = path.join(outputDirAbs, `${set}.${format}`);
+                if (fs.existsSync(outputPath)) fs.rmSync(outputPath);
+
+                // Output this dataset
+                this.log(`Saving ${set} to ${format} file...`);
+                let lastLogTime = Date.now();
+                await sqlConverter(format, sqlPath, outputPath, entryCount => {
+                    if (Date.now() - lastLogTime > 500)
+                        this.logOverwrite(
+                            `Saving ${set} to ${format} file: ${entryCount.toLocaleString()} entries processed...`
+                        );
+                });
+                this.log(`Saved dataset ${set} to ${outputPath}`);
+            }
+        } else if (type == 'osufiles') {
+            // Move .osu files into output dir from download dir
+            // No need to keep the download in this case
+            this.log(`Moving .osu files...`);
+            const dir = await fsp.opendir(downloadDirAbs);
+            let i = 0;
+            for await (const entry of dir) {
+                if (!entry.isFile()) continue;
+
+                const srcPath = path.join(downloadDirAbs, entry.name);
+                const destPath = path.join(outputDirAbs, entry.name);
+
+                if (i % 100 === 0) {
+                    this.logOverwrite(`Moving .osu files: ${i} moved...`);
+                }
+
+                try {
+                    await fsp.rename(srcPath, destPath);
+                } catch (err) {
+                    if (err.code === 'EXDEV') {
+                        await fsp.copyFile(srcPath, destPath);
+                        await fsp.unlink(srcPath); // Delete original after successful copy
+                    } else {
+                        this.log(`Failed to move ${entry.name}: ${err}`);
+                    }
+                }
+                i++;
+            }
+            this.log(`Moved ${i} .osu files to output directory`);
+        }
+
+        // Delete download if not set to preserve
+        if (!preserveDownloads || type == 'osufiles') {
+            this.log(`Cleaning up downloads...`);
+            //fs.rmSync(downloadDirAbs, { recursive: true, force: true });
+        } else {
+            this.log(`Download files are preserved`);
+        }
     }
 }
 
