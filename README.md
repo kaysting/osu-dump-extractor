@@ -58,24 +58,10 @@ const OsuDumpExtractorAPI = require('osu-dump-extractor');
 const dumpExtractor = new OsuDumpExtractorAPI();
 ```
 
-| Type | Name | Description |
-| --- | --- | --- |
-| `string` | `name` | The file name of the archive. |
-| `string` | `url` | The fully qualified URL to this archive file. |
-| `string` | `date` | The date on which this archive was created, in `YYYY-MM-DD` format. |
-| `type` | `type` | The type of data contained in this archive. Possibilities are:
-
-- `osufiles`: An archive containing every ranked beatmap's `.osu` file, currently numbering over 200k.
-- `performance`: An archive containing `.sql` dumps of several osu! database tables for beatmaps, users, scores, etc. All archives of this type include data for all ranked beatmaps, but users and scores depend on the mode, performance selection, and count.
-- `unknown`: Any other archive that doesn't match a known naming scheme. |
-| `string` | `mode` | The game mode that this dump targets if `type` is `performance`. |
-| `Object` | `performance` | Performance specifics when `type` is `performance`. |
-| `string` | `performance.sample` | How players were sampled for performance data in this dump. Either `top` for top players or `random` for random players. |
-| `number` | `performance.count` | The number of players that were sampled for performance data in this dump. The dump will only include data for this number of players. |
-### Method: `listArchives`
+### Method: `listArchives(): Array.<Archive>`
 List archives currently available on [data.ppy.sh](https://data.ppy.sh).
 
-### Method: `downloadArchive`
+### Method: `downloadArchive(): string`
 Download and extract the specified data archive to a local folder.
 
 #### Params
@@ -85,10 +71,7 @@ Download and extract the specified data archive to a local folder.
 | **Yes** | `string` | `archiveName` | The name of a currently available archive on data.ppy.sh. See the output of `listArchives()` if unsure. | `undefined` |
 | **Yes** | `function` | `progressCallback` | A callback to be invoked repeatedly as download/extraction progresses that receives `(loadedBytes, totalBytes)` params. | `undefined` |
 
-#### Returns
-`string` 
-
-### Method: `datasetsToSqlFiles`
+### Method: `datasetsToSqlFiles(): void`
 Get a map of dataset names to mode-specific sql dump file names
 
 #### Params
@@ -96,10 +79,7 @@ Get a map of dataset names to mode-specific sql dump file names
 | --- | --- | --- | --- | --- |
 | **Yes** | `ModeName` | `mode` | The mode. | `osu` |
 
-#### Returns
-`undefined`
-
-### Method: `extract`
+### Method: `extract(): void`
 Download, extract, and parse data from `data.ppy.sh` into a preferred format.
 
 #### Params
@@ -107,12 +87,8 @@ Download, extract, and parse data from `data.ppy.sh` into a preferred format.
 | --- | --- | --- | --- | --- |
 | No | `Object` | `options` | Data extraction options. | `undefined` |
 | No | `boolean` | `options.preserveDownloads` | Whether or not downloaded files should be preserved for future runs after the requested data is extracted. | `false` |
-| No | `string` | `options.outputDir` | The path to the directory where output files (JSON, CSV) should be saved, relative to the current working directory.
-
-If not specified, an `osu-data` folder will be created in the current working directory and used. | `undefined` |
-| No | `string` | `options.downloadDir` | The path to the directory where data files should be downloaded, relative to the current working directory. A folder for the downloaded archive will be created inside this directory.
-
-If not specified, defaults to the value of `outputDir`. | `undefined` |
+| No | `string` | `options.outputDir` | The path to the directory where output files (JSON, CSV) should be saved, relative to the current working directory.<br><br>If not specified, an `osu-data` folder will be created in the current working directory and used. | `undefined` |
+| No | `string` | `options.downloadDir` | The path to the directory where data files should be downloaded, relative to the current working directory. A folder for the downloaded archive will be created inside this directory.<br><br>If not specified, defaults to the value of `outputDir`. | `undefined` |
 | No | `'osufiles'|'performance'` | `options.type` | The type of archive to extract, where `osufiles` is an archive of every ranked beatmap's `.osu` file, and `performance` is an archive of various osu! database table dumps. | `undefined` |
 | No | `string` | `options.date` | The date, in `YYYY-MM` format, of the archive to extract, or `latest` to use the latest available. | `'latest'` |
 | No | `Array.<DatasetName>` | `options.datasets` | An list of datasets to extract, or `['all']` to extract all datasets. | `['all']` |
@@ -120,9 +96,6 @@ If not specified, defaults to the value of `outputDir`. | `undefined` |
 | No | `'top'|'random'` | `options.sampleMethod` | The method used to sample users for performance data. | `'top'` |
 | No | `'1k'|'10k'` | `options.sampleCount` | The number of users to sample for performance data. | `'1k'` |
 | No | `Format` | `options.format` | The format to output data in. | `'csv'` |
-
-#### Returns
-`undefined`
 
 
 ### Types
@@ -132,6 +105,16 @@ If not specified, defaults to the value of `outputDir`. | `undefined` |
 
 Represents a `data.ppy.sh` archive entry.
 
+| Type | Name | Description |
+| --- | --- | --- |
+| `string` | `name` | The file name of the archive. |
+| `string` | `url` | The fully qualified URL to this archive file. |
+| `string` | `date` | The date on which this archive was created, in `YYYY-MM-DD` format. |
+| `type` | `type` | The type of data contained in this archive. Possibilities are:<>br<>br- `osufiles`: An archive containing every ranked beatmap's `.osu` file, currently numbering over 200k.<>br- `performance`: An archive containing `.sql` dumps of several osu! database tables for beatmaps, users, scores, etc. All archives of this type include data for all ranked beatmaps, but users and scores depend on the mode, performance selection, and count.<>br- `unknown`: Any other archive that doesn't match a known naming scheme. |
+| `string` | `mode` | The game mode that this dump targets if `type` is `performance`. |
+| `Object` | `performance` | Performance specifics when `type` is `performance`. |
+| `string` | `performance.sample` | How players were sampled for performance data in this dump. Either `top` for top players or `random` for random players. |
+| `number` | `performance.count` | The number of players that were sampled for performance data in this dump. The dump will only include data for this number of players. |
 
 #### `ModeName`
 `'osu'|'taiko'|'catch'|'mania'`

@@ -17,7 +17,10 @@ async function main() {
     for (const item of dataPublic) {
         switch (item.kind) {
             case 'function': {
-                functionsLines.push(`### Method: \`${item.name}\``, item.description);
+                functionsLines.push(
+                    `### Method: \`${item.name}(): ${item.returns ? item.returns.map(r => formatType(r.type)).join(',') : 'void'}\``,
+                    item.description
+                );
 
                 if (item.params.length) {
                     // Sort params with required first
@@ -38,20 +41,12 @@ async function main() {
                                     p.optional ? 'No' : '**Yes**',
                                     `\`${formatType(p.type)}\``,
                                     `\`${p.name}\``,
-                                    p.description || '',
+                                    p.description.split('\n').join('<br>') || '',
                                     `\`${p.defaultvalue}\`` ?? ''
                                 ].join(' | ') +
                                 ' |'
                         );
                     }
-
-                    functionsLines.push(
-                        '',
-                        `#### Returns`,
-                        item.returns
-                            ? `\`${item.returns.map(r => formatType(r.type)).join(',')}\` ${item.returns.description ? `: ${item.returns.description}` : ''}`
-                            : `\`undefined\``
-                    );
                 }
 
                 functionsLines.push('');
@@ -60,12 +55,16 @@ async function main() {
             case 'typedef': {
                 typesLines.push(`#### \`${item.name}\``, `\`${formatType(item.type)}\``, '', item.description, '');
                 if (item.properties) {
-                    functionsLines.push('| Type | Name | Description |');
-                    functionsLines.push('| --- | --- | --- |');
+                    typesLines.push('| Type | Name | Description |');
+                    typesLines.push('| --- | --- | --- |');
                     for (const p of item.properties) {
-                        functionsLines.push(
+                        typesLines.push(
                             '| ' +
-                                [`\`${formatType(p.type)}\``, `\`${p.name}\``, p.description || ''].join(' | ') +
+                                [
+                                    `\`${formatType(p.type)}\``,
+                                    `\`${p.name}\``,
+                                    p.description.split('\n').join('<>br') || ''
+                                ].join(' | ') +
                                 ' |'
                         );
                     }
