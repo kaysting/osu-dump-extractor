@@ -68,6 +68,7 @@ async function main() {
                 apiLines.push('');
             }
             case 'function': {
+                if (item.name == item.memberof) return; // skip constructors
                 apiLines.push(
                     `### Method: \`${formatFunctionName(item)}(): ${item.returns ? item.returns.map(r => formatType(r.type)).join(',') : 'void'}\``,
                     item.description
@@ -92,7 +93,7 @@ async function main() {
                                 [
                                     `\`${formatType(p.type, true)}\``,
                                     `\`${p.name}\``,
-                                    p.description.split('\n').join('<>br') || ''
+                                    p.description.split('\n').join('<br>') || ''
                                 ].join(' | ') +
                                 ' |'
                         );

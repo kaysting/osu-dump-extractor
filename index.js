@@ -68,7 +68,7 @@ class OsuDumpExtractorAPI {
 
     /**
      * Create a new osu-data-extractor API instance.
-     * @param {Object} [opts] API options.
+     * @param {Object} [opts={}] API options.
      * @param {boolean} [opts.enableLogging=false] Whether or not the API should log what's happening.
      * @param {string} [opts.baseUrl='https://data.ppy.sh'] The base URL to list and download archives from.
      */
@@ -241,28 +241,28 @@ class OsuDumpExtractorAPI {
 
     /**
      * Download, extract, and parse data from `data.ppy.sh` into a preferred format.
-     * @param {Object} [options] Data extraction options.
-     * @param {boolean} [options.preserveDownloads=false] Whether or not downloaded files should be preserved for future runs after the requested data is extracted.
-     * @param {string} [options.outputDir] The path to the directory where output files (JSON, CSV) should be saved, relative to the current working directory.
+     * @param {Object} [opts={}] Data extraction options.
+     * @param {boolean} [opts.preserveDownloads=false] Whether or not downloaded files should be preserved for future runs after the requested data is extracted.
+     * @param {string} [opts.outputDir] The path to the directory where output files (JSON, CSV) should be saved, relative to the current working directory.
      *
      * If not specified, an `osu-data` folder will be created in the current working directory and used.
-     * @param {string} [options.downloadDir] The path to the directory where data files should be downloaded, relative to the current working directory. A folder for the downloaded archive will be created inside this directory.
+     * @param {string} [opts.downloadDir] The path to the directory where data files should be downloaded, relative to the current working directory. A folder for the downloaded archive will be created inside this directory.
      *
      * If not specified, defaults to the value of `outputDir`.
-     * @param {ArchiveType} [options.type] The type of archive to extract, where `osufiles` is an archive of every ranked beatmap's `.osu` file, and `performance` is an archive of various osu! database table dumps.
-     * @param {string} [options.date='latest'] The date, in `YYYY-MM` format, of the archive to extract, or `latest` to use the latest available.
-     * @param {DatasetName[]} [options.datasets=['all']] An list of datasets to extract, or `['all']` to extract all datasets.
-     * @param {ModeName[]} [options.mode='osu'] The game mode to extract datasets for. This only applies if you're extracting user/score data.
-     * @param {'top'|'random'} [options.sampleMethod='top'] The method used to sample users for performance data.
-     * @param {'1k'|'10k'} [options.sampleCount='1k'] The number of users to sample for performance data.
-     * @param {Format} [options.format='csv'] The format to output data in.
+     * @param {ArchiveType} [opts.type] The type of archive to extract, where `osufiles` is an archive of every ranked beatmap's `.osu` file, and `performance` is an archive of various osu! database table dumps.
+     * @param {string} [opts.date='latest'] The date, in `YYYY-MM` format, of the archive to extract, or `latest` to use the latest available.
+     * @param {DatasetName[]} [opts.datasets=['all']] An list of datasets to extract, or `['all']` to extract all datasets.
+     * @param {ModeName[]} [opts.mode='osu'] The game mode to extract datasets for. This only applies if you're extracting user/score data.
+     * @param {'top'|'random'} [opts.sampleMethod='top'] The method used to sample users for performance data.
+     * @param {'1k'|'10k'} [opts.sampleCount='1k'] The number of users to sample for performance data.
+     * @param {Format} [opts.format='csv'] The format to output data in.
      */
     async extract({
         preserveDownloads = false,
         outputDir = './osu-data',
         downloadDir = null,
         type = 'performance',
-        datasets = [],
+        datasets = ['all'],
         mode = 'osu',
         date = 'latest',
         sampleMethod = 'top',
@@ -339,9 +339,9 @@ class OsuDumpExtractorAPI {
         if (type == 'performance') {
             const dsToSql = this.datasetsToSqlFiles(mode);
 
-            // Get resolved list of selected datasets
+            // Resolve list of selected datasets
             const activeDatasets = [];
-            if (datasets.includes('all')) {
+            if (datasets.length == 0 || datasets.includes('all')) {
                 activeDatasets.push(...Object.keys(dsToSql));
             } else {
                 activeDatasets.push(...datasets);
