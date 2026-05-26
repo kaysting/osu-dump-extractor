@@ -89,12 +89,12 @@ Download, extract, and parse data from `data.ppy.sh` into a preferred format.
 | No | `boolean` | `options.preserveDownloads` | Whether or not downloaded files should be preserved for future runs after the requested data is extracted. | `false` |
 | No | `string` | `options.outputDir` | The path to the directory where output files (JSON, CSV) should be saved, relative to the current working directory.<br><br>If not specified, an `osu-data` folder will be created in the current working directory and used. | `undefined` |
 | No | `string` | `options.downloadDir` | The path to the directory where data files should be downloaded, relative to the current working directory. A folder for the downloaded archive will be created inside this directory.<br><br>If not specified, defaults to the value of `outputDir`. | `undefined` |
-| No | `'osufiles'|'performance'` | `options.type` | The type of archive to extract, where `osufiles` is an archive of every ranked beatmap's `.osu` file, and `performance` is an archive of various osu! database table dumps. | `undefined` |
+| No | `'osufiles'\|'performance'` | `options.type` | The type of archive to extract, where `osufiles` is an archive of every ranked beatmap's `.osu` file, and `performance` is an archive of various osu! database table dumps. | `undefined` |
 | No | `string` | `options.date` | The date, in `YYYY-MM` format, of the archive to extract, or `latest` to use the latest available. | `'latest'` |
 | No | `Array.<DatasetName>` | `options.datasets` | An list of datasets to extract, or `['all']` to extract all datasets. | `['all']` |
 | No | `Array.<ModeName>` | `options.mode` | The game mode to extract datasets for. This only applies if you're extracting user/score data. | `'osu'` |
-| No | `'top'|'random'` | `options.sampleMethod` | The method used to sample users for performance data. | `'top'` |
-| No | `'1k'|'10k'` | `options.sampleCount` | The number of users to sample for performance data. | `'1k'` |
+| No | `'top'\|'random'` | `options.sampleMethod` | The method used to sample users for performance data. | `'top'` |
+| No | `'1k'\|'10k'` | `options.sampleCount` | The number of users to sample for performance data. | `'1k'` |
 | No | `Format` | `options.format` | The format to output data in. | `'csv'` |
 
 
@@ -117,17 +117,17 @@ Represents a `data.ppy.sh` archive entry.
 | `number` | `performance.count` | The number of players that were sampled for performance data in this dump. The dump will only include data for this number of players. |
 
 #### `ModeName`
-`'osu'|'taiko'|'catch'|'mania'`
+`'osu'\|'taiko'\|'catch'\|'mania'`
 
 An osu! game mode/ruleset.
 
 #### `DatasetName`
-`'beatmap-difficulty-attribs'|'beatmap-difficulty'|'beatmap-failtimes'|'beatmap-performance-blacklist'|'beatmaps'|'beatmapsets'|'counts'|'difficulty-attribs'|'highscores'|'playcounts'|'user-stats'|'users'|'scores'|'all'`
+`'beatmap-difficulty-attribs'\|'beatmap-difficulty'\|'beatmap-failtimes'\|'beatmap-performance-blacklist'\|'beatmaps'\|'beatmapsets'\|'counts'\|'difficulty-attribs'\|'highscores'\|'playcounts'\|'user-stats'\|'users'\|'scores'\|'all'`
 
 The name of an extracted dataset.
 
 #### `Format`
-`'json'|'ndjson'|'jsonl'|'yaml'|'yml'|'csv'|'tsv'|'txt'`
+`'json'\|'ndjson'\|'jsonl'\|'yaml'\|'yml'\|'csv'\|'tsv'\|'txt'`
 
 The name of a supported output format.
 
